@@ -52,10 +52,15 @@ class TelegramExtension {
     }
     var users = await this.dbInterface.findAllMatchingEntries("Users", {group_id: grpId});
     if (!users) return;
+    var counter = 0;
     for (var user of users) {
       if (user.user_id != id) {
-         tele.forwardMsg(id, user.user_id, msgObj, botKey);
+        counter += 1;
+        tele.forwardMsg(id, user.user_id, msgObj, botKey);
       }
+    }
+    if (counter == 0) {
+      tele.sendMessage(id, "You are alone in this room...just thought you should know.", {}, botKey);
     }
   }
   
