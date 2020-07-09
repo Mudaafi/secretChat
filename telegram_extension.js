@@ -22,11 +22,13 @@ class TelegramExtension {
     var formatting = message.entities;
     if (chatId != id) return; // From a group, ignore
     // malice removal
-    var textMsg = this.tele.cleanseString(textMsg);
+    var textMsg = message.text;
+    if (!textMsg) textMsg = "empty";
+    textMsg = tele.cleanseString(textMsg);
     textMsg = textMsg.replace(/\"/g,"'");
     // Polls not supported
     if (formatting) { 
-      textMsg = this.tele.convertToHTML(textMsg, formatting);
+      textMsg = tele.convertToHTML(textMsg, formatting);
     }
     // -- Commands
     // Start/registration
@@ -35,7 +37,7 @@ class TelegramExtension {
       await this.dbInterface.addEntry("Users", newUser);
       tele.sendMessage(id, "/join a room!", {}, Config.getBotKey());
     } else if (this.identifyCommand("/join", textMsg)) {
-      var msg = textMsg.split("/join")[1];
+      var msg = textMsg.split("/join")[1].trim();
       this.joinGrp(id, msg);
     } else {
       this.sendGroup(id, message);
@@ -43,18 +45,24 @@ class TelegramExtension {
   }
   
   async sendGroup(id, msgObj) {
-    var grpId = await this.dbInterface.findMatchingEntry("Users", {user_id: id});
+    var grpId = (await this.dbInterface.findMatchingEntry("Users", {user_id: id})).group_id;
     if (grpId == "no grp") {
-      tele.sendMessage(id, "You are not in a room. /join room_number");
+      tele.sendMessage(id, "You are not in a room. /join room_number", {} , botKey);
       return;
     }
     var users = await this.dbInterface.findAllMatchingEntries("Users", {group_id: grpId});
+    if (!users) return;
     for (var user of users) {
-      tele.forwardMsg(id, user.user_id, msgObj, botKey);
+      if (user.user_id != id) {
+         tele.forwardMsg(id, user.user_id, msgObj, botKey);
+      }
     }
   }
   
   async joinGrp(id, grpId) {
+    if (grpId == "") {
+      return tele.sendMessage(id, "use /join with a room number!", {}, botKey);
+    }
     this.dbInterface.updateEntries("Users", {group_id: grpId}, {user_id: id}); 
     var msg = "You have registered for Room: " + grpId;
     tele.sendMessage(id, msg, {}, Config.getBotKey());
