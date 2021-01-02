@@ -292,12 +292,12 @@ function updateMessage(chat_id, msg_id, text, reply_markup, bot_key) {
 function forwardMsg(srcId, destId, message, bot_key) {
   // Identifying Message Type
   if (message.reply_markup || message.poll) {
-    sendMessage(srcId, "Sorry, polls and such are not allowed as of yet :(", bot_key);
+    sendMessage(srcId, "Sorry, polls and such are not allowed as of yet :(", {}, bot_key);
   } else if (message.text) {
     // malice removals
     var textMsg = cleanseString(message.text);
     textMsg = textMsg.replace(/\"/g,"'");
-    return sendMessage(destId, message, bot_key)
+    return sendMessage(destId, textMsg, {}, bot_key)
   } else if (message.sticker) {
     var sticker = message.sticker;
     return sendSticker(destId, sticker, bot_key);
@@ -503,7 +503,7 @@ function sendMessage(id, text, reply_markup, bot_key) {
     .catch(err => {
       if (err.response && err.response.data.description == 'Forbidden: bot was blocked by the user') {
         console.log("User Blocked The Bot! (" + id + ")" + "\nText: " + text);
-        resolve("blocked");
+        resolve({msg: "blocked", arg: id});
         return;
       }
       // ...and here if it was not
@@ -653,4 +653,5 @@ module.exports = {
   unbanChatMemeber: unbanChatMemeber,
   genChatPermissions: genChatPermissions,
   restrictChatMember: restrictChatMember,
+  forwardMsg: forwardMsg,
 }

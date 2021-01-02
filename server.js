@@ -9,15 +9,43 @@ app.use(express.static("public"));
 
 // Custom Imports
 const Config = require('./config.js');
+const TeleUser = require('./telegram_user_model.js');
 const TelegramExtension = require('./telegram_extension.js');
 const DatabaseInterface = require('./database_interface.js');
 let dbInterface = new DatabaseInterface();
 let tele = new TelegramExtension(dbInterface);
 
 app.get("/", (request, response) => {
-  dbInterface.printAllEntries("Users");
+  dbInterface.getAllEntries("Users").then((users) => {
+  response.end(JSON.stringify(users));
+  })
+});
+
+app.post("/add_user", (request, response) => {
+  var newUser = new TeleUser(request.body.id, "no first name", "no username", "no role", request.body.grpId);
+  dbInterface.addEntry("Users", newUser);
   response.end("ok");
 });
+
+app.post("/remove_user", (request, response) => {
+  dbInterface.deleteEntry("Users", {user_id: request.body.id});
+  response.end("ok");
+});
+
+app.post("/move_user", (req, res) => {
+  var payload = req.body;
+  tele.joinGrp(payload.id, payload.grpId).then(() => {
+    res.end("user moved to group: " + payload.grpId);
+  });
+});
+
+app.post("/send_msg", (req, res) => {
+  var payload = req.body;
+  tele.sendMsg(payload.to, payload.msg).then(() => {
+    res.end("ok");
+  });
+});
+
 
 app.post("/secret_chat", (req, res) => {
   console.log("received");
@@ -45,7 +73,7 @@ var listener = httpsServer.listen(Config.getPort(), () => {
 })
 
 /**
-// listen for requests :)
+  // listen for requests :)
 var listener = app.listen(process.env.PORT, () => {
   console.log(`Your app is listening on port ${listener.address().port}`);
 });

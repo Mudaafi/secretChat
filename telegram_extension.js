@@ -33,6 +33,15 @@ class TelegramExtension {
     // -- Commands
     // Start/registration
     if (this.identifyCommand("/start", textMsg)) {
+      var users = await this.dbInterface.getAllEntries("Users");
+      if (users) {
+        for (var user of users) {
+          if (user.user_id == id) {
+            tele.sendMessage(id, "/join a room!", {}, Config.getBotKey());
+            return;
+          }
+        }
+      }
       var newUser = new TeleUser(id);
       await this.dbInterface.addEntry("Users", newUser);
       tele.sendMessage(id, "/join a room!", {}, Config.getBotKey());
@@ -43,7 +52,7 @@ class TelegramExtension {
       this.sendGroup(id, message);
     }
   }
-  
+
   async sendGroup(id, msgObj) {
     var grpId = (await this.dbInterface.findMatchingEntry("Users", {user_id: id})).group_id;
     if (grpId == "no grp") {
@@ -56,25 +65,35 @@ class TelegramExtension {
     for (var user of users) {
       if (user.user_id != id) {
         counter += 1;
-        tele.forwardMsg(id, user.user_id, msgObj, botKey);
+        console.log(user.user_id);
+        tele.forwardMsg(id, user.user_id, msgObj, botKey).then((res) => {
+          if (res.msg == "blocked") {
+            this.dbInterface.deleteEntry("Users", { user_id: res.arg});
+          }
+        })
       }
     }
     if (counter == 0) {
       tele.sendMessage(id, "You are alone in this room...just thought you should know.", {}, botKey);
     }
   }
-  
+
   async joinGrp(id, grpId) {
     if (grpId == "") {
       return tele.sendMessage(id, "use /join with a room number!", {}, botKey);
     }
     this.dbInterface.updateEntries("Users", {group_id: grpId}, {user_id: id}); 
-    var msg = "You have registered for Room: " + grpId;
+    var msg = "You have joined for Room: " + grpId;
     tele.sendMessage(id, msg, {}, Config.getBotKey());
   }
-  
+
   identifyCommand(command, textMsg) {
     return textMsg.indexOf(command) >= 0;
+  }
+
+  // Wrapper for telegram_interface.js sendMessage()
+  async sendMsg(id, msg) {
+    tele.sendMessage(id, msg, {}, Config.getBotKey());
   }
 }
 
