@@ -25,8 +25,10 @@ export async function processTeleMsg(message: TeleMessage) {
     switch (message.text) {
       case '/start':
         let res = await registerUserInDb(message.from)
-        if (res == DatabaseResponse.SUCESSS)
+        if (res == DatabaseResponse.SUCESSS) {
           await sendMsg(message.from.id, 'Registration Successful.')
+          await sendMsg(DEV_ID, 'A new user has joined :D')
+        }
         return sendMsg(message.from.id, '/join a room!')
 
       case '/help':
