@@ -41,7 +41,7 @@ export async function registerUserInDb(
     room: user.id.toString(),
   }
 
-  await client.query(Create('users', newUser))
+  await client.query(Create('users', { data: newUser }))
 
   return DatabaseResponse.SUCESSS
 }
