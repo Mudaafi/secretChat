@@ -59,7 +59,12 @@ export async function joinRoom(userId: string, room: string) {
     await sendMsg(userId, `Error Joining Room ${room}`)
     throw new Error(`User: ${userId} failed to join room: ${room}`)
   }
-  return sendMsg(userId, `You have joined Room: <b>${room}</b>`)
+  await sendMsg(userId, `You have joined Room: <b>${room}</b>`)
+  let users = await getNearbyUsers(userId)
+  for (var id of users) {
+    if (id != userId)
+      await sendMsg(id, `<b>ℹ Room ${room}</b>\nA new user has joined!`)
+  }
 }
 
 async function broadcastToUserGroup(userId: string, msgObj: TeleMessage) {

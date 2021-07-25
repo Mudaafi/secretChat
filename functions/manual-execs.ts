@@ -20,10 +20,17 @@ async function processPostReq(body: any) {
       await joinRoom(body.user_id, body.room)
       return `User: ${body.user_id} moved to room: ${body.room}`
     case 'broadcast':
-      let users = await getUsersByRoom(body.room)
+      var users = await getUsersByRoom(body.room)
       for (var userId of users)
         await sendMessage(TELE_BOT_KEY, userId, body.message)
       return `Broadcasted message to Room ${body.room}`
+    case 'pm':
+      var users: string[] = body.users
+        .split('')
+        .filter((user: string) => user != '')
+      for (var userId of users) {
+        await sendMessage(TELE_BOT_KEY, userId, body.message)
+      }
     case 'test':
       return 'Test function executed'
     default:
