@@ -109,5 +109,5 @@ async function sendMsg(
   text: string,
   reply_markup?: TeleInlineKeyboard | TeleReplyKeyboard,
 ) {
-  sendMessage(TELE_BOT_KEY, chat_id, text, reply_markup)
+  return sendMessage(TELE_BOT_KEY, chat_id, text, reply_markup)
 }
