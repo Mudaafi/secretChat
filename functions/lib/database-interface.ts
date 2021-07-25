@@ -10,6 +10,7 @@ import faunadb, {
   Select,
   Create,
   Function as Fn,
+  Exists,
 } from 'faunadb'
 import { DatabaseResponse, UserDocument } from './models'
 const client = new faunadb.Client({ secret: process.env.FAUNADB_KEY || '' })
@@ -30,7 +31,7 @@ export async function registerUserInDb(
   user: TeleUser,
 ): Promise<DatabaseResponse> {
   let userExists = await client.query(
-    Get(Match(Index('users_by_id'), user.id.toString())),
+    Exists(Match(Index('users_by_id'), user.id.toString())),
   )
   if (userExists) return DatabaseResponse.USER_ALREADY_EXISTS
 
