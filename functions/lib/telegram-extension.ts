@@ -32,7 +32,7 @@ export async function processTeleMsg(message: TeleMessage) {
       case '/help':
         return sendMsg(
           message.from.id,
-          `For issues/feedback, you may contact @mudaafi`,
+          `For issues/feedback, you may contact @mudaafi\n\nAnonymous Feedback Form: https://docs.google.com/forms/d/e/1FAIpQLSefdKcoe_g_eoO8YLz9FVkNVThtsQ2DLv7KWsv63d0kqyqNAA/viewform?usp=sf_link`,
         )
 
       default:
