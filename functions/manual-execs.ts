@@ -26,7 +26,7 @@ async function processPostReq(body: any) {
       return `Broadcasted message to Room ${body.room}`
     case 'pm':
       var users: string[] = body.users
-        .split('')
+        .split(' ')
         .filter((user: string) => user != '')
       for (var userId of users) {
         await sendMessage(TELE_BOT_KEY, userId, body.message)
